@@ -1,0 +1,12 @@
+---
+# handlers file for ansible-role-wireguard
+
+- name: reload firewalld
+  service:
+    name: firewalld
+    state: reloaded
+
+- name: run wireguard
+  service:
+    name: wg-quick@wg0
+    state: restarted
