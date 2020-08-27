@@ -1,0 +1,48 @@
+
+- name: net.core.default_qdisc
+  sysctl:
+    name: net.core.default_qdisc
+    value: fq
+    state: present
+
+- name: net.ipv4.tcp_congestion_control
+  sysctl: 
+    name: net.ipv4.tcp_congestion_control
+    value: bbr
+    state: present
+
+
+- name: net.ipv4.ip_forward 
+  sysctl: 
+    name: net.ipv4.ip_forward 
+    value: 1
+    state: present
+
+
+- name: net.ipv4.conf.default.rp_filter 
+  sysctl:
+    name: net.ipv4.conf.default.rp_filter
+    value: 1
+    state: present
+
+
+- name: net.ipv4.conf.all.rp_filter
+  sysctl:
+    name: net.ipv4.conf.all.rp_filter
+    value: 1
+    state: present
+
+
+- name:  net.ipv4.tcp_syncookies
+  sysctl: 
+    name: net.ipv4.tcp_syncookies
+    value: 1
+    state: present
+
+
+
+#- name: net.ipv6.conf.all.forwarding
+#  sysctl:
+#    name: net.ipv6.conf.all.forwarding
+#    value: 1
+#    state: present

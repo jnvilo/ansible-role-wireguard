@@ -1,0 +1,110 @@
+---
+# tasks file for ansible-role-wireguard
+
+- name: Install required repos
+  yum:
+    name: [ "epel-release", "elrepo-release "]
+    state: present
+
+
+- name: Install required rpms
+  yum: 
+    name: [ "kmod-wireguard","wireguard-tools"]
+    state: present
+
+- name: create ansible directory 
+  file:
+    path: /etc/wireguard
+    owner: root
+    group: root
+    mode: '1700'
+
+- name: create the base config file
+  template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
+    owner: root
+    group: root
+    mode: '0600'
+
+
+- name: enable masquerade on firewall
+  firewalld:
+    masquerade: yes
+    state: enabled
+    permanent: yes
+    zone: public
+  notify:
+    - reload firewalld
+
+- name: configure systctl params
+  include: sysctl.yml
+
+- name: allow peer to peer communication
+  firewalld:
+    zone: internal
+    interface: wg0
+    permanent: yes
+    state: enabled
+  notify:
+    - reload firewalld
+
+- name: allowed_ssh 
+  firewalld:
+    zone: public
+    rich_rule:  rule family=ipv4 source address="{{item}}" port protocol="tcp" port="22" accept
+    permanent: yes
+    immediate: yes
+    state: enabled
+  with_items: "{{allowed_ssh}}"
+  notify:
+    - reload firewalld
+  tags:
+    - ssh
+
+- name: disable public ssh 
+  firewalld:
+    zone: public
+    service: ssh
+    state: disabled
+    permanent: yes
+    immediate: yes
+  notify:
+    - reload firewalld
+  tags:
+    - ssh
+
+- name: disable cockpit
+  firewalld:
+    zone: public
+    service: cockpit
+    state: disabled
+    permanent: yes
+    immediate: yes
+  notify:
+    - reload firewalld
+  tags:
+    - ssh
+
+- name: enable wg0 service
+  systemd:
+    name: wg-quick@wg0
+    enabled: yes
+    state: started
+
+- name: register peers
+  shell: wg set wg0 peer {{item["public_key"]}} allowed-ips {{item["ipaddress"]}}
+  with_items: "{{wg_peers}}"
+  notify: run wireguard
+
+- name: open port 31194
+  firewalld:
+    port: "31194/udp"
+    permanent: yes
+    state: enabled
+    zone: public
+  notify:
+    - reload firewalld
+
+
+
