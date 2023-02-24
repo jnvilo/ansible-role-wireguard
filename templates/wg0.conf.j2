@@ -1,15 +1,15 @@
 #Warning: This file is managed by ansible-role-wireguard.
 #Changes to this file will be overwritten by ansible
-
+# Server public key is : {{server_public_key}}
 [Interface]
 ## VPN server private IP address ##
-Address = {{wg_ipaddress}}
+Address = {{server_ip}}
  
 ## VPN server port ##
-ListenPort = 31194
+ListenPort = {{server_port}}
  
 ## VPN server's private key i.e. /etc/wireguard/privatekey ##
-PrivateKey = {{wg_privatekey}}
+PrivateKey = {{server_private_key}}
  
 ## Save and update this config file when a new peer (vpn client) added ##
 SaveConfig = true
