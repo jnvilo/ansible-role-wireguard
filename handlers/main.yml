@@ -4,9 +4,9 @@
 - name: reload firewalld
   service:
     name: firewalld
-    state: reloaded
+    state: restarted
 
-- name: run wireguard
+- name: restart wireguard
   service:
     name: wg-quick@wg0
     state: restarted
