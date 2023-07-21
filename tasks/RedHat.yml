@@ -1,0 +1,88 @@
+---
+# tasks file for ansible-role-wireguard
+
+- name: Install required repos
+  yum:
+    name: [ "epel-release", "elrepo-release "]
+    state: present
+
+
+- name: Install required rpms
+  yum: 
+    name: [ "kmod-wireguard","wireguard-tools"]
+    state: present
+
+- name: create ansible directory 
+  file:
+    path: /etc/wireguard
+    owner: root
+    group: root
+    mode: '1700'
+
+- name: create the base config file
+  template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
+    owner: root
+    group: root
+    mode: '0600'
+  tags:
+    - wireguard
+    - wg0
+
+- name: enable masquerade on firewall
+  firewalld:
+    masquerade: yes
+    state: enabled
+    permanent: yes
+    zone: public
+  notify:
+    - reload firewalld
+
+- name: configure systctl params
+  include: sysctl.yml
+
+# allow udp port 51515
+- name: Allow udp port 51515
+  firewalld:
+    port: "51515/udp"
+    permanent: yes
+    state: enabled
+    zone: public
+  notify:
+    - reload firewalld
+
+- name: allow peer to peer communication
+  firewalld:
+    zone: internal
+    interface: wg0
+    permanent: yes
+    state: enabled
+  notify:
+    - reload firewalld
+
+- name: enable wg0 service
+  systemd:
+    name: wg-quick@wg0
+    enabled: yes
+    state: started
+
+- name: register peers
+  shell: wg set wg0 peer {{item["public_key"]}} allowed-ips {{item["allowed_ips"]}}
+  with_items: "{{wg_peers}}"
+  notify: run wireguard
+  tags:
+    - wireguard
+    - wireguard-peers
+
+- name: open port 31194
+  firewalld:
+    port: "31194/udp"
+    permanent: yes
+    state: enabled
+    zone: public
+  notify:
+    - reload firewalld
+
+
+
