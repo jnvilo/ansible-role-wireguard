@@ -13,9 +13,8 @@
 # Deploy server configuration if server is true 
 - name: Deploy wireguard configuration
   template:
-    src: wireguard-server.conf.j2
+    src: wg0.conf.j2
     dest: /etc/wireguard/wg0.conf
-  when: wireguard_server == true
   notify: restart wireguard
   tags:
     - wireguard 
