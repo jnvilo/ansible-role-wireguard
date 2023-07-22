@@ -4,14 +4,14 @@
 
 [Interface]
 ## VPN server private IP address ##
-Address = {{local_ip}} 
- {% if listen_port %}
+Address = {{wireguard_local_ip}} 
+ {% if wireguard_listen_port is defined%}
 ## VPN server port ##
-ListenPort = {{server_port}}
+ListenPort = {{wireguard_listen_port is defined}}
  {% endif %}
 
 ## VPN server's private key i.e. /etc/wireguard/privatekey ##
-PrivateKey = {{server_private_key}}
+PrivateKey = {{wireguard_private_key}}
  
 {% if wireguard_peers %}
 [Peer]
@@ -22,10 +22,10 @@ PublicKey = {{peer.public_key}}
 {% if peer.allowed_ips %}
 AllowedIPs = {{peer.allowed_ips}}
 {% endif %}
-{% if peer.endpoint %}
+{% if peer.endpoint is defined%}
 Endpoint = {{peer.endpoint}}
 {% endif %}
-{% if peer.persistent_keepalive %}
+{% if peer.persistent_keepalive is defined%}
 PersistentKeepalive = {{peer.persistent_keepalive}}
 {% endif %}
 {% endfor %}
